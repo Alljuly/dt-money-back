@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -24,30 +25,42 @@ export class TransactionController {
   ) {
     const createdTransaction =
       await this.transactionService.create(createTransactionDto);
-    res.status(201).send(createdTransaction);
-    return;
+    return res.status(201).json(createdTransaction);
   }
 
   @Get()
-  findAll() {
-    return this.transactionService.findAll();
+  async findAll(@Res() res: Response) {
+    const transactions = await this.transactionService.findAll();
+
+    if (!transactions || transactions.length === 0) {
+      return res.status(404).json({ message: 'No transactions found' });
+    }
+
+    return res.status(200).json(transactions);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.transactionService.findOne(+id);
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    const transaction = await this.transactionService.findOne(id);
+    return res.status(200).json(transaction);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateTransactionDto: UpdateTransactionDto,
+    @Res() res: Response,
   ) {
-    return this.transactionService.update(+id, updateTransactionDto);
+    const updatedTransaction = await this.transactionService.update(
+      id,
+      updateTransactionDto,
+    );
+    return res.status(200).json(updatedTransaction);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.transactionService.remove(+id);
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    await this.transactionService.remove(id);
+    return res.status(204).send();
   }
 }
