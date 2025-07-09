@@ -8,11 +8,13 @@ import {
   Delete,
   Res,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Response } from 'express';
+import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Controller('transaction')
 export class TransactionController {
@@ -29,8 +31,11 @@ export class TransactionController {
   }
 
   @Get()
-  async findAll(@Res() res: Response) {
-    const transactions = await this.transactionService.findAll();
+  async findAll(
+    @Query() paginationQuery: PaginationQueryDto,
+    @Res() res: Response,
+  ) {
+    const transactions = await this.transactionService.findAll(paginationQuery);
 
     if (!transactions || transactions.length === 0) {
       return res.status(404).json({ message: 'No transactions found' });

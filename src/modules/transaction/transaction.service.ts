@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Injectable()
 export class TransactionService {
@@ -19,8 +20,14 @@ export class TransactionService {
     return createdTransaction;
   }
 
-  findAll() {
-    return this.prisma.transaction.findMany();
+  findAll(paginationQuery?: PaginationQueryDto) {
+    let { skip, take } = paginationQuery || {};
+    skip = skip !== undefined ? Number(skip) : undefined;
+    take = take !== undefined ? Number(take) : undefined;
+    return this.prisma.transaction.findMany({
+      skip,
+      take,
+    });
   }
 
   async findOne(id: string) {
